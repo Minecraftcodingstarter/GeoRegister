@@ -1,0 +1,53 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wortliste</title>
+</head>
+<body>
+  <h1>Gib ein Wort ein:</h1>
+  <input id="wordInput" type="text" placeholder="Wort eingeben..." />
+  <button onclick="submitWord()">Hinzufügen</button>
+
+  <h2>Wörterliste:</h2>
+  <ul id="wordList"></ul>
+
+  <script>
+    async function loadWords() {
+      const res = await fetch('/words');
+      const words = await res.json();
+      const list = document.getElementById('wordList');
+      list.innerHTML = '';
+      words.forEach(word => {
+        const li = document.createElement('li');
+        li.textContent = word;
+        list.appendChild(li);
+      });
+    }
+
+    async function submitWord() {
+      const input = document.getElementById('wordInput');
+      const word = input.value.trim();
+      if (word === '') return;
+
+      const res = await fetch('/add-word', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word })
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        input.value = '';
+        loadWords();
+      } else {
+        alert(result.message);
+      }
+    }
+
+    // Initial laden
+    loadWords();
+  </script>
+</body>
+</html>
